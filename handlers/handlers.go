@@ -14,5 +14,8 @@ func AppHandlers() {
 	R.HandleFunc("/projects", routes.GetProjectsHandler).Methods("GET")
 	R.HandleFunc("/project", routes.PostProjectHandler).Methods("POST")
 	R.HandleFunc("/project", routes.DeleteProjectHandler).Methods("DELETE")
+	R.HandleFunc("/status", routes.GetProjectsHandler).Methods("GET")
+	R.HandleFunc("/status", routes.PostProjectHandler).Methods("POST")
+	R.HandleFunc("/status", routes.DeleteProjectHandler).Methods("DELETE")
 
 }
