@@ -21,7 +21,9 @@ func AppHandlers() {
 	R.HandleFunc("/status", routes.DeleteStatusCubicacion).Methods("DELETE")
 	//Cubicacion handler
 	R.HandleFunc("/cubicacion", routes.GetCubicacionesHandler).Methods("GET")
+	R.HandleFunc("/cubicacion/file", routes.GetCubicacionFileHandler).Methods("GET")
 	R.HandleFunc("/cubicacion", routes.PostCubicacionesHandler).Methods("POST")
+	R.HandleFunc("/cubicacion/upload", routes.UploadCubicacionHandler).Methods("POST")
 	R.HandleFunc("/cubicacion", routes.DeleteCubicacionHandler).Methods("DELETE")
 
 }

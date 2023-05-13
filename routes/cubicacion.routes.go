@@ -2,7 +2,10 @@ package routes
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/TulioMeran/cubicacionGoWebApi/db"
 	"github.com/TulioMeran/cubicacionGoWebApi/models"
@@ -85,4 +88,93 @@ func DeleteCubicacionHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func UploadCubicacionHandler(w http.ResponseWriter, r *http.Request) {
+	file, handler, err := r.FormFile("archivo")
+
+	if err != nil {
+		http.Error(w, "archivo is required: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+
+	if len(id) < 1 {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	var t models.Cubicacion
+
+	result := db.DB.First(&t, id)
+
+	if result.Error != nil {
+		http.Error(w, "Error occurrs getting cubicacion in upload file: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var extension = strings.Split(handler.Filename, ".")[1]
+	var archivo string = "uploads/cubicacion/" + id + "." + extension
+
+	f, err := os.OpenFile(archivo, os.O_WRONLY|os.O_CREATE, 0666)
+
+	if err != nil {
+		http.Error(w, "Error occurrs uploading the file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = io.Copy(f, file)
+
+	if err != nil {
+		http.Error(w, "Error occurrs copying the file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	t.PathFile = id + "." + extension
+
+	result = db.DB.Save(&t)
+
+	//result = db.DB.Model(&t).Update("PathFile", id+"."+extension)
+
+	if result.Error != nil {
+		http.Error(w, "Error occurrs updating cubicacion in upload file: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func GetCubicacionFileHandler(w http.ResponseWriter, r *http.Request) {
+	if len(r.URL.Query().Get("id")) < 1 {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+
+	var t models.Cubicacion
+
+	result := db.DB.First(&t, id)
+
+	if result.Error != nil {
+		http.Error(w, "Error occurrs getting cubicacion in cubicacion file: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	openFile, err := os.Open("uploads/cubicacion/" + t.PathFile)
+
+	if err != nil {
+		http.Error(w, "Error occurrs opening file in cubicacion file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = io.Copy(w, openFile)
+
+	if err != nil {
+		http.Error(w, "Error occurrs copying file in cubicacion file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
