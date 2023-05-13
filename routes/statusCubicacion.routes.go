@@ -9,7 +9,7 @@ import (
 )
 
 func GetStatusCubicacionsHandler(w http.ResponseWriter, r *http.Request) {
-	var status models.StatusCubicacion
+	var status []models.StatusCubicacion
 	result := db.DB.Find(&status)
 
 	if result.Error != nil {
