@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/TulioMeran/cubicacionGoWebApi/db"
+	"github.com/TulioMeran/cubicacionGoWebApi/dto"
 	"github.com/TulioMeran/cubicacionGoWebApi/models"
 )
 
@@ -17,9 +18,19 @@ func GetStatusCubicacionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var statusDto []dto.StatusCubicacion
+
+	for _, s := range status {
+		var element = dto.StatusCubicacion{
+			Codigo:      int(s.ID),
+			Descripcion: s.Description,
+		}
+		statusDto = append(statusDto, element)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(&status)
+	json.NewEncoder(w).Encode(&statusDto)
 }
 
 func PostStatusCubicacionHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,4 +82,42 @@ func DeleteStatusCubicacion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func PutStatusCubicacion(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+
+	if len(id) < 1 {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	var t models.StatusCubicacion
+	json.NewDecoder(r.Body).Decode(&t)
+
+	var status models.StatusCubicacion
+	result := db.DB.First(&status, id)
+
+	if status.ID < 1 {
+		http.Error(w, "StatusCubicacion not found", http.StatusNotFound)
+		return
+	}
+
+	if result.Error != nil {
+		http.Error(w, "Error occurrs getting statusCubicacion for putStatusCubicacion: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(t.Description) > 1 {
+		status.Description = t.Description
+	}
+
+	result = db.DB.Save(&status)
+
+	if result.Error != nil {
+		http.Error(w, "Error occurrs saving statusCubicacion for putStatusCubicacion: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

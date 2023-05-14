@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/TulioMeran/cubicacionGoWebApi/db"
+	"github.com/TulioMeran/cubicacionGoWebApi/dto"
 	"github.com/TulioMeran/cubicacionGoWebApi/models"
 )
 
@@ -21,11 +22,36 @@ func GetCubicacionesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var cubicacionesDto []dto.Cubicacion
+
+	for _, c := range cubicaciones {
+		var proyecto = dto.Project{
+			Codigo:      int(c.Project.ID),
+			Titulo:      c.Project.Title,
+			Descripcion: c.Project.Description,
+		}
+		var estado = dto.StatusCubicacion{
+			Codigo:      int(c.StatusCubicacion.ID),
+			Descripcion: c.StatusCubicacion.Description,
+		}
+
+		var element = dto.Cubicacion{
+			Codigo:           int(c.ID),
+			Descripcion:      c.Description,
+			Observacion:      c.Observation,
+			Ruta:             c.PathFile,
+			Proyecto:         proyecto,
+			EstadoCubicacion: estado,
+		}
+
+		cubicacionesDto = append(cubicacionesDto, element)
+
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(&cubicaciones)
-
+	json.NewEncoder(w).Encode(&cubicacionesDto)
 }
 
 func PostCubicacionesHandler(w http.ResponseWriter, r *http.Request) {
@@ -173,6 +199,57 @@ func GetCubicacionFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "Error occurrs copying file in cubicacion file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func PutCubicacionHandler(w http.ResponseWriter, r *http.Request) {
+
+	id := r.URL.Query().Get("id")
+
+	if len(id) < 1 {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	var cubicacion models.Cubicacion
+	var t models.Cubicacion
+	json.NewDecoder(r.Body).Decode(&t)
+
+	result := db.DB.First(&cubicacion, id)
+
+	if cubicacion.ID < 1 {
+		http.Error(w, "Cubicacion not found", http.StatusNotFound)
+		return
+	}
+
+	if result.Error != nil {
+		http.Error(w, "Error occurrs getting cubicacion for putcubicacion: "+result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(t.Description) > 1 {
+		cubicacion.Description = t.Description
+	}
+
+	if t.StatusCubicacionID > 0 {
+		cubicacion.StatusCubicacionID = t.StatusCubicacionID
+	}
+
+	if len(t.Observation) > 1 {
+		cubicacion.Observation = t.Observation
+	}
+
+	if t.ProjectID > 0 {
+		cubicacion.ProjectID = t.ProjectID
+	}
+
+	result = db.DB.Save(&cubicacion)
+
+	if result.Error != nil {
+		http.Error(w, "Error occurrs saving cubicacion putCubicacion: "+result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
 
