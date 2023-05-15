@@ -29,4 +29,13 @@ func AppHandlers() {
 	R.HandleFunc("/cubicacion", routes.DeleteCubicacionHandler).Methods("DELETE")
 	R.HandleFunc("/cubicacion", routes.PutCubicacionHandler).Methods("PUT")
 
+	//User handler
+	R.HandleFunc("/user", routes.PostUserHandler).Methods("POST")
+	R.HandleFunc("/user", routes.PutUserHandler).Methods("PUT")
+	R.HandleFunc("/user", routes.GetUsersHandler).Methods("GET")
+	R.HandleFunc("/user", routes.DeleteUserHandler).Methods("DELETE")
+
+	//Auth handler
+	R.HandleFunc("/auth/login", routes.LoginHandler).Methods("POST")
+
 }

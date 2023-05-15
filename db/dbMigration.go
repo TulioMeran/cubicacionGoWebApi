@@ -5,5 +5,5 @@ import (
 )
 
 func DbMigration() {
-	DB.AutoMigrate(&models.Project{}, &models.StatusCubicacion{}, &models.Cubicacion{})
+	DB.AutoMigrate(&models.Project{}, &models.StatusCubicacion{}, &models.Cubicacion{}, &models.User{})
 }
