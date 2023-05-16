@@ -4,11 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/TulioMeran/cubicacionGoWebApi/db"
 	"github.com/TulioMeran/cubicacionGoWebApi/dto"
-	"github.com/TulioMeran/cubicacionGoWebApi/jwt"
 	"github.com/TulioMeran/cubicacionGoWebApi/models"
 	"github.com/TulioMeran/cubicacionGoWebApi/utils"
 )
@@ -180,54 +177,4 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var t models.Login
-
-	json.NewDecoder(r.Body).Decode(&t)
-
-	if len(t.Email) < 1 {
-		http.Error(w, "email is required", http.StatusBadRequest)
-		return
-	}
-
-	if len(t.Password) < 1 {
-		http.Error(w, "password is required", http.StatusBadRequest)
-		return
-	}
-
-	var user models.User
-
-	result := db.DB.Where("email = ?", t.Email).First(&user)
-
-	if user.ID == 0 {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
-
-	if result.Error != nil {
-		http.Error(w, "Error occurrs getting user in login", http.StatusInternalServerError)
-		return
-	}
-
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(t.Password))
-
-	if err != nil {
-		http.Error(w, "User or password invalid", http.StatusBadRequest)
-		return
-	}
-
-	token, err := jwt.Generator(user)
-
-	var resp = models.LoginResponse{
-		Name:     user.Name,
-		LastName: user.LastName,
-		Token:    token,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp)
-
 }
