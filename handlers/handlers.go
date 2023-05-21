@@ -39,4 +39,10 @@ func AppHandlers() {
 	//Auth handler
 	R.HandleFunc("/auth/login", routes.LoginHandler).Methods("POST")
 
+	//Comment handler
+	R.HandleFunc("/comment", middlewares.TokenValidator(routes.GetCommentsHandler)).Methods("GET")
+	R.HandleFunc("/comment", middlewares.TokenValidator(routes.PostCommentHandler)).Methods("POST")
+	R.HandleFunc("/comment", middlewares.TokenValidator(routes.PutCommentHandler)).Methods("PUT")
+	R.HandleFunc("/comment", middlewares.TokenValidator(routes.DeleteCommentHandler)).Methods("DELETE")
+
 }

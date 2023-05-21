@@ -15,7 +15,7 @@ import (
 func GetCubicacionesHandler(w http.ResponseWriter, r *http.Request) {
 	var cubicaciones []models.Cubicacion
 
-	result := db.DB.Preload("Project").Preload("StatusCubicacion").Find(&cubicaciones)
+	result := db.DB.Preload("Project").Preload("StatusCubicacion").Preload("Comments").Find(&cubicaciones)
 
 	if result.Error != nil {
 		http.Error(w, "Error occurrs getting cubicaciones: "+result.Error.Error(), http.StatusInternalServerError)
@@ -35,6 +35,16 @@ func GetCubicacionesHandler(w http.ResponseWriter, r *http.Request) {
 			Descripcion: c.StatusCubicacion.Description,
 		}
 
+		var commentsDto []dto.Comment
+
+		for _, comment := range c.Comments {
+			var t = dto.Comment{
+				Codigo:      int(comment.ID),
+				Descripcion: comment.Description,
+			}
+			commentsDto = append(commentsDto, t)
+		}
+
 		var element = dto.Cubicacion{
 			Codigo:           int(c.ID),
 			Descripcion:      c.Description,
@@ -42,6 +52,7 @@ func GetCubicacionesHandler(w http.ResponseWriter, r *http.Request) {
 			Ruta:             c.PathFile,
 			Proyecto:         proyecto,
 			EstadoCubicacion: estado,
+			Comments:         commentsDto,
 		}
 
 		cubicacionesDto = append(cubicacionesDto, element)

@@ -12,4 +12,5 @@ type Cubicacion struct {
 	Project            Project
 	StatusCubicacionID int `gorm:"not null" json:"statuscubicacionid"`
 	StatusCubicacion   StatusCubicacion
+	Comments           []Comment
 }

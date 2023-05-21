@@ -7,4 +7,5 @@ type Cubicacion struct {
 	Ruta             string `json:"ruta"`
 	Proyecto         Project
 	EstadoCubicacion StatusCubicacion
+	Comments         []Comment
 }
