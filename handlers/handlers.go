@@ -24,7 +24,7 @@ func AppHandlers() {
 	R.HandleFunc("/status", middlewares.TokenValidator(routes.DeleteStatusCubicacion)).Methods("DELETE")
 	//Cubicacion handler
 	R.HandleFunc("/cubicacion", middlewares.TokenValidator(routes.GetCubicacionesHandler)).Methods("GET")
-	R.HandleFunc("/cubicacion/file", middlewares.TokenValidator(routes.GetCubicacionFileHandler)).Methods("GET")
+	R.HandleFunc("/cubicacion/file", routes.GetCubicacionFileHandler).Methods("GET")
 	R.HandleFunc("/cubicacion", middlewares.TokenValidator(routes.PostCubicacionesHandler)).Methods("POST")
 	R.HandleFunc("/cubicacion/upload", middlewares.TokenValidator(routes.UploadCubicacionHandler)).Methods("POST")
 	R.HandleFunc("/cubicacion", middlewares.TokenValidator(routes.DeleteCubicacionHandler)).Methods("DELETE")
@@ -44,5 +44,11 @@ func AppHandlers() {
 	R.HandleFunc("/comment", middlewares.TokenValidator(routes.PostCommentHandler)).Methods("POST")
 	R.HandleFunc("/comment", middlewares.TokenValidator(routes.PutCommentHandler)).Methods("PUT")
 	R.HandleFunc("/comment", middlewares.TokenValidator(routes.DeleteCommentHandler)).Methods("DELETE")
+
+	//PathFiles
+	R.HandleFunc("/pathfile", middlewares.TokenValidator(routes.GetPathFilesByCubicationId)).Methods("GET")
+	R.HandleFunc("/pathfile", middlewares.TokenValidator(routes.PostPathFilesByCubicacionId)).Methods("POST")
+	R.HandleFunc("/pathfile", middlewares.TokenValidator(routes.PutPathFilesByCubicationId)).Methods("PUT")
+	R.HandleFunc("/pathfile", middlewares.TokenValidator(routes.DeletePathFilesByCubicacionId)).Methods("DELETE")
 
 }

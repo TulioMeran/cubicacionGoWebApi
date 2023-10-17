@@ -15,7 +15,7 @@ import (
 func GetCubicacionesHandler(w http.ResponseWriter, r *http.Request) {
 	var cubicaciones []models.Cubicacion
 
-	result := db.DB.Preload("Project").Preload("StatusCubicacion").Preload("Comments").Find(&cubicaciones)
+	result := db.DB.Preload("Project").Preload("StatusCubicacion").Preload("Comments").Preload("PathFiles").Find(&cubicaciones)
 
 	if result.Error != nil {
 		http.Error(w, "Error occurrs getting cubicaciones: "+result.Error.Error(), http.StatusInternalServerError)
@@ -45,11 +45,22 @@ func GetCubicacionesHandler(w http.ResponseWriter, r *http.Request) {
 			commentsDto = append(commentsDto, t)
 		}
 
+		var pathFilesDto []dto.Ruta
+
+		for _, path := range c.PathFiles {
+			var t = dto.Ruta{
+				Nombre:        path.Name,
+				Activo:        path.Active,
+				FechaRegistro: path.CreatedAt,
+			}
+			pathFilesDto = append(pathFilesDto, t)
+		}
+
 		var element = dto.Cubicacion{
 			Codigo:           int(c.ID),
 			Descripcion:      c.Description,
 			Observacion:      c.Observation,
-			Ruta:             c.PathFile,
+			Rutas:            pathFilesDto,
 			Proyecto:         proyecto,
 			EstadoCubicacion: estado,
 			Comments:         commentsDto,
@@ -168,7 +179,7 @@ func UploadCubicacionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.PathFile = id + "." + extension
+	//	t.PathFile = id + "." + extension
 
 	result = db.DB.Save(&t)
 
@@ -199,7 +210,17 @@ func GetCubicacionFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	openFile, err := os.Open("uploads/cubicacion/" + t.PathFile)
+	var pathFileName string
+
+	for _, path := range t.PathFiles {
+
+		if path.Active {
+			pathFileName = path.Name
+			break
+		}
+	}
+
+	openFile, err := os.Open("uploads/cubicacion/" + pathFileName)
 
 	if err != nil {
 		http.Error(w, "Error occurrs opening file in cubicacion file: "+err.Error(), http.StatusInternalServerError)
